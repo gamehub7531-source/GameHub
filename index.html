@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameHub | Gaming Electronics</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- Razorpay SDK -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Overlay for modals -->
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- Session Timeout Warning -->
+    <div class="session-timeout" id="sessionTimeout">
+        <i class="fas fa-clock"></i>
+        <h3>Session About to Expire</h3>
+        <p>Your session will expire in:</p>
+        <div class="session-timer" id="sessionTimer">05:00</div>
+        <p>Do you want to continue your session?</p>
+        <div class="session-buttons">
+            <button class="btn" onclick="extendSession()">Yes, Stay Logged In</button>
+            <button class="btn btn-secondary" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    
+    <!-- Cookie Consent Banner -->
+    <div class="cookie-consent" id="cookieConsent">
+        <div class="cookie-content">
+            <div class="cookie-text">
+                <p><strong>🍪 We value your privacy</strong></p>
+                <p>We use cookies to enhance your browsing experience, remember your login, and save your shopping cart.</p>
+                <p><a href="#" onclick="showCookiePolicy()">Learn more about our cookie policy</a></p>
+            </div>
+            <div class="cookie-buttons">
+                <button class="btn-cookie" onclick="declineCookies()">Decline</button>
+                <button class="btn-cookie btn-cookie-accept" onclick="acceptCookies()">Accept All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo" onclick="showPage('dashboard')">
+                    <i class="fas fa-gamepad"></i>
+                    <span>GameHub</span>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#" onclick="showPage('login')" id="nav-login">Login</a></li>
+                        <li><a href="#" onclick="showPage('dashboard')" id="nav-dashboard">Dashboard</a></li>
+                        <li><a href="#" onclick="showPage('cart')" id="nav-cart">Cart <span class="cart-count-nav" id="navCartCount">0</span></a></li>
+                        <li><a href="#" onclick="showPage('purchases')" id="nav-purchases">Purchases</a></li>
+                        <li><a href="#" onclick="showPage('payment')" id="nav-payment">Payment</a></li>
+                        <li><a href="#" onclick="logout()" id="nav-logout" style="display: none;">Logout</a></li>
+                    </ul>
+                </nav>
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="loggedInUser">Guest</span>
+                    <div class="cart-icon" onclick="showPage('cart')">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Login Page -->
+    <div id="login-page" class="page active">
+        <div class="container">
+            <div class="login-container">
+                <div class="login-header">
+                    <i class="fas fa-gamepad" style="font-size: 48px; color: #FF2E9E; margin-bottom: 20px;"></i>
+                    <h2>Welcome to GameHub</h2>
+                    <p>Please login to continue shopping</p>
+                </div>
+                
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="name"><i class="fas fa-user"></i> Full Name</label>
+                        <input type="text" id="name" class="form-control" placeholder="Enter your full name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email"><i class="fas fa-envelope"></i> Email Address</label>
+                        <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="mobile"><i class="fas fa-phone"></i> Mobile Number</label>
+                        <input type="tel" id="mobile" class="form-control" placeholder="Enter your mobile number" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password"><i class="fas fa-lock"></i> Password</label>
+                        <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
+                        <div class="password-strength-meter" id="passwordStrengthMeter">
+                            <div class="strength-bar" id="strengthBar"></div>
+                        </div>
+                        <small class="password-hint" id="passwordHint">Use 8+ characters with uppercase, lowercase, number & special character</small>
+                    </div>
+                    
+                    <div class="remember-me">
+                        <input type="checkbox" id="rememberMe" checked>
+                        <label for="rememberMe">Remember me for 7 days</label>
+                    </div>
+                    
+                    <button type="button" id="send-otp-btn" class="btn">
+                        <span id="send-otp-text">Send OTP</span>
+                        <div id="otp-spinner" class="spinner" style="display: none;"></div>
+                    </button>
+                    
+                    <div class="form-group" id="otp-field" style="display: none;">
+                        <label for="otp"><i class="fas fa-key"></i> Enter OTP</label>
+                        <input type="text" id="otp" class="form-control" placeholder="Enter OTP received" maxlength="6">
+                    </div>
+                    
+                    <button type="button" id="login-btn" class="btn" style="display: none;">Verify & Login</button>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboard-page" class="page">
+        <div class="container">
+            <div class="dashboard-header">
+                <h2>Welcome to Your GameHub</h2>
+                <p>Level up your gaming setup with premium gear</p>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchProducts" placeholder="Search gaming gear..." onkeyup="searchProducts()">
+                </div>
+            </div>
+            
+            <div class="products-container" id="products">
+                <!-- Product cards will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Page -->
+    <div id="cart-page" class="page">
+        <div class="container">
+            <div class="cart-container">
+                <div class="cart-header">
+                    <h2><i class="fas fa-shopping-cart"></i> Your Gaming Cart</h2>
+                    <div class="cart-total" id="cartTotal">Total: ₹0</div>
+                </div>
+                
+                <div class="cart-items" id="cartItems">
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-cart fa-4x"></i>
+                        <h3>Your cart is empty</h3>
+                        <p>Add some gaming gear to your cart to see them here</p>
+                        <button class="btn" onclick="showPage('dashboard')" style="width: auto; margin-top: 20px;">Continue Shopping</button>
+                    </div>
+                </div>
+                
+                <div class="cart-actions" id="cartActions" style="display: none;">
+                    <button class="btn btn-secondary" onclick="clearCart()"><i class="fas fa-trash-alt"></i> Clear Cart</button>
+                    <button class="btn" onclick="proceedToPayment()"><i class="fas fa-credit-card"></i> Proceed to Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Page -->
+    <div id="payment-page" class="page">
+        <div class="container">
+            <div class="payment-container">
+                <div class="payment-header">
+                    <h2><i class="fas fa-lock"></i> Complete Your Payment</h2>
+                    <p>Pay securely using Razorpay</p>
+                </div>
+                
+                <div class="order-summary">
+                    <h3>Order Summary</h3>
+                    <div id="orderSummaryItems"></div>
+                    <div class="order-summary-total">
+                        <span>Total Amount:</span>
+                        <span id="paymentTotal">₹0</span>
+                    </div>
+                </div>
+                
+                <button class="btn razorpay-btn" id="pay-now-btn" onclick="openRazorpay()">
+                    <i class="fas fa-rupee-sign"></i> Pay with Razorpay
+                </button>
+                <div style="text-align: center; margin: 15px 0; position: relative;">
+                    <span style="background: rgba(15,12,31,0.9); padding: 0 10px; color: #999; font-size: 14px;">OR</span>
+                    <hr style="border: none; border-top: 1px solid #333; margin: -10px 0 0 0;">
+                </div>
+                <button class="btn btn-secondary" id="cod-btn" onclick="openCOD()" style="background: linear-gradient(135deg, #11998e, #38ef7d);">
+                    <i class="fas fa-money-bill-wave"></i> Cash on Delivery
+                </button>
+                <button class="btn btn-secondary" onclick="showPage('cart')" style="margin-top: 20px;">
+                    <i class="fas fa-arrow-left"></i> Back to Cart
+                </button>
+                
+                <div class="payment-success" id="payment-success">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>Payment Successful!</h3>
+                    <p>Thank you for your purchase. Your order has been confirmed.</p>
+                    <div class="order-details">
+                        <p>Order ID: <strong id="order-id">GH-<span id="order-number">00000</span></strong></p>
+                        <p>Tracking ID: <strong id="tracking-id">GH-TRACK-<span id="tracking-number">00000</span></strong></p>
+                    </div>
+                    <button class="btn" onclick="showPage('purchases')" style="width: auto; margin-top: 20px;">View Your Purchases</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchases Page -->
+    <div id="purchases-page" class="page">
+        <div class="container">
+            <div class="purchases-container">
+                <div class="purchases-header">
+                    <h2><i class="fas fa-box"></i> Your Gaming Purchases</h2>
+                </div>
+                
+                <div class="purchases-list" id="purchasesList">
+                    <div class="empty-purchases">
+                        <i class="fas fa-box-open fa-4x"></i>
+                        <h3>No purchases yet</h3>
+                        <p>Your purchased gaming gear will appear here</p>
+                        <button class="btn" onclick="showPage('dashboard')" style="width: auto; margin-top: 20px;">Start Shopping</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot Widget -->
+    <div class="chatbot-widget" id="chatbotWidget">
+        <div class="chatbot-button" onclick="toggleChatbot()">
+            <i class="fas fa-gamepad"></i>
+            <span class="notification-badge" id="chatbotNotification" style="display: none;">1</span>
+        </div>
+        <div class="chatbot-container" id="chatbotContainer">
+            <div class="chatbot-header">
+                <div class="chatbot-header-info">
+                    <i class="fas fa-gamepad"></i>
+                    <div>
+                        <h3>GameBuddy</h3>
+                        <p class="status online"><i class="fas fa-circle"></i> Online</p>
+                    </div>
+                </div>
+                <button onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages">
+                <div class="message bot-message">
+                    <div class="message-content">
+                        <p>Hey gamer! 🎮 I'm GameBuddy, your gaming assistant. How can I help you level up your setup today?</p>
+                    </div>
+                    <span class="message-time">Just now</span>
+                </div>
+            </div>
+            <div class="chatbot-typing" id="chatbotTyping" style="display: none;">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="chatbot-input">
+                <input type="text" id="chatbotInput" placeholder="Type your message..." onkeypress="handleChatbotKeypress(event)">
+                <button onclick="sendChatbotMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <div class="chatbot-quick-actions">
+                <button onclick="quickChatbotAction('products')"><i class="fas fa-box"></i> Products</button>
+                <button onclick="quickChatbotAction('prices')"><i class="fas fa-tag"></i> Prices</button>
+                <button onclick="quickChatbotAction('help')"><i class="fas fa-question-circle"></i> Help</button>
+                <button onclick="quickChatbotAction('offers')"><i class="fas fa-gift"></i> Offers</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp Widget -->
+    <div class="whatsapp-widget" id="whatsappWidget">
+        <a href="https://wa.me/919870052196?text=Hello%20GameHub%20Team%2C%20I%20need%20help%20with%20my%20gaming%20order" target="_blank" class="whatsapp-button">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 GameHub. All rights reserved.</p>
+            <p>Your ultimate destination for gaming gear</p>
+            <div class="footer-links">
+                <a href="#" onclick="showCookiePolicy()">Cookie Policy</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="https://wa.me/919870052196">Contact Us</a>
+                <a href="#">About Us</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
